@@ -1,7 +1,13 @@
+# R meta-data files
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+
+# output files
 *csv
 *tar.gz
+*xls
+
+# project config files
 config.R
