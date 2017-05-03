@@ -31,6 +31,7 @@ df_1s_ranks <- calcRanksGroups(df_1s)
 m.w <- matrix('-', 20, 20)
 m.t <- matrix('-', 20, 20)
 m.h <- matrix('-', 20, 20)
+m.dh <- matrix('-', 20, 20) # matrix of no_wins-no_losses
 groups2skip <- c(48,342)
 df_1s_ranks <- df_1s_ranks %>% filter(!gr_code %in% groups2skip)
 top20 <- unlist(df_1s_ranks[1:20, c("gr_code")])
@@ -58,6 +59,8 @@ for (i in 1:min(20, length(top20))){
       h2h <- head2head(df_1s, top20[[i]], top20[[j]])
       m.h[i,j] <- sprintf("%.3f", h2h$win)
       m.h[j,i] <- sprintf("%.3f", h2h$loss)
+      m.dh[i,j] <- sprintf("%.3f", h2h$win - h2h$loss)
+      m.dh[j,i] <- sprintf("%.3f", h2h$loss - h2h$win)
     }
   }
 }
@@ -71,6 +74,9 @@ rownames(m.t) <- mapply(FUN=function(x,y){sprintf("%s G%03d", x, y)}, gr_names20
 colnames(m.h) <- sapply(top20, FUN=function(x){sprintf("G%03d", x)})
 rownames(m.h) <- mapply(FUN=function(x,y){sprintf("%s G%03d", x, y)}, gr_names20, top20 )
 
+colnames(m.dh) <- sapply(top20, FUN=function(x){sprintf("G%03d", x)})
+rownames(m.dh) <- mapply(FUN=function(x,y){sprintf("%s G%03d", x, y)}, gr_names20, top20 )
+
 # write 
 #write.csv(m.w, file = "server.top20.wilcox.csv", row.names = TRUE)
 write.csv(m.w, file = "human.top20.wilcox.csv", row.names = TRUE)
@@ -81,4 +87,6 @@ write.csv(m.t, file = "human.top20.ttest.csv", row.names = TRUE)
 #write.csv(m.h, file = "server.top20.h2h.csv", row.names = TRUE)
 write.csv(m.h, file = "human.top20.h2h.csv", row.names = TRUE)
 
+#write.csv(m.dh, file = "server.top20.diff_h2h.csv", row.names = TRUE)
+write.csv(m.dh, file = "human.top20.diff_h2h.csv", row.names = TRUE)
 
