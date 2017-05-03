@@ -1,7 +1,7 @@
 # Author : Bohdan Monastyrskyy
 # Date : 2017-04-28
-# Description : the script runs the Wilcoxon tests on composote z-scores
-#         (gdt_ha , lddt, cad_aa, sg a.k.a sg_lvr_6_2, ace a.k.a qse)
+# Description : the script runs the statistical significance tests on combination of z-scores
+#         (gdt_ha , lddt, cad_aa, sg a.k.a sg_lvr_6_2, ase a.k.a qse)
 #
 
 # load config file, user-defined functions, and utils
@@ -17,11 +17,11 @@ rm(tmp)
 
 # set up connection with database
 con <- connect.database(db.name, db.user, db.password, db.host, dp.port)
-rm(db.password) #delete db.password - security issue
+rm(db.password) #delete db.password for security issue
 
 # fetch data from database at predictioncenter.org
-# df_1s <- fetchData(con, 'casp12', 'first', 'server')
-df_1s <- fetchData(con, 'casp12', 'first', 'human')
+humanserver_flag <- 'server' # variable that switch analysis between 'human' and 'server' predictions
+df_1s <- fetchData(con, 'casp12', 'first', humanserver_flag)
 
 # # add combined z-score
 df_1s <- comp.z(df_1s)
@@ -32,7 +32,7 @@ m.w <- matrix('-', 20, 20)
 m.t <- matrix('-', 20, 20)
 m.h <- matrix('-', 20, 20)
 m.dh <- matrix('-', 20, 20) # matrix of no_wins-no_losses
-groups2skip <- c(48,342)
+groups2skip <- c(48,342) # manually added groups to be eleminated from analysis
 df_1s_ranks <- df_1s_ranks %>% filter(!gr_code %in% groups2skip)
 top20 <- unlist(df_1s_ranks[1:20, c("gr_code")])
 gr_names20 <- unlist(df_1s_ranks[1:20, c("gr_name")])
@@ -77,16 +77,12 @@ rownames(m.h) <- mapply(FUN=function(x,y){sprintf("%s G%03d", x, y)}, gr_names20
 colnames(m.dh) <- sapply(top20, FUN=function(x){sprintf("G%03d", x)})
 rownames(m.dh) <- mapply(FUN=function(x,y){sprintf("%s G%03d", x, y)}, gr_names20, top20 )
 
-# write 
-#write.csv(m.w, file = "server.top20.wilcox.csv", row.names = TRUE)
-write.csv(m.w, file = "human.top20.wilcox.csv", row.names = TRUE)
+# write to csv files
+write.csv(m.w, file = paste0(humanserver_flag, ".top20.wilcox.csv"), row.names = TRUE)
 
-#write.csv(m.t, file = "server.top20.ttest.csv", row.names = TRUE)
-write.csv(m.t, file = "human.top20.ttest.csv", row.names = TRUE)
+write.csv(m.t, file = paste0(humanserver_flag, ".top20.ttest.csv"), row.names = TRUE)
 
-#write.csv(m.h, file = "server.top20.h2h.csv", row.names = TRUE)
-write.csv(m.h, file = "human.top20.h2h.csv", row.names = TRUE)
+write.csv(m.h, file = paste0(humanserver_flag, ".top20.h2h.csv"), row.names = TRUE)
 
-#write.csv(m.dh, file = "server.top20.diff_h2h.csv", row.names = TRUE)
-write.csv(m.dh, file = "human.top20.diff_h2h.csv", row.names = TRUE)
+write.csv(m.dh, file = paste0(humanserver_flag, ".top20.diff_h2h.csv"), row.names = TRUE)
 
